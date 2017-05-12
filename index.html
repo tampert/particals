@@ -32,15 +32,14 @@
 
 	var paTrees = [];
 	var _angle = 270
-	var _colors = ['Red','Green','Beige','Azure', 'Aqua'];
+	var _colors = ['Red','Green','Blue', 'Aqua', 'BlueViolet', 'Chartruese','Coral'];
 	var _color_num = Math.floor((Math.random() * _colors.length)); 
 
 	function init() {
 		canvas=document.getElementById("myCanvas");
 		context=canvas.getContext("2d");
-		clearCanvas();
-		context.globalAlpha = 0.4;
-	
+		//clearCanvas();
+		//context.globalAlpha = 0.4;
 		canvas.addEventListener('click',ReDraw,false)
 		/*
 		var appel = new TFractalTree(4,110);
@@ -50,17 +49,19 @@
 	}
 
 	function clearCanvas() {
-		var canvas=document.getElementById("myCanvas");
-		var context=canvas.getContext("2d");
+		canvas=document.getElementById("myCanvas");
+		context=canvas.getContext("2d");
 		context.clearRect(0,0,canvas.width,canvas.height);
 	}
 
 	function ReDraw(e){
 		_color_num = Math.floor((Math.random() * _colors.length)); 
+		
 		if(paTrees[0]){
 			paTrees[0].ResetInterval();
 			removeByElement(paTrees,paTrees[0]);
 		}
+		
 		//mouse position
 		//http://www.html5canvastutorials.com/advanced/html5-canvas-mouse-coordinates/
 		var x = e.clientX;     
@@ -71,7 +72,7 @@
 		console.log('_color_num : ',_color_num)
 		console.log(_colors[_color_num])      
 		clearCanvas()
-		var appel = new TFractalTree(4,110);
+		var appel = new TFractalTree(6,110);
 		//Math.floor(Math.random() * (max - min + 1)) + min;
 		console.log("x : " , x)
 		console.log("y : " , y)
