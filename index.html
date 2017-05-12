@@ -16,6 +16,12 @@
 		background:#FFF;
 		border:1px solid gray;
 	}
+	#menu{
+		width:100%;
+		position:relative;
+		display:block;
+		
+	}
 
 	</style>
 </head>
@@ -23,35 +29,69 @@
 	<div id="wrapper">
 	<canvas id="myCanvas" width="960" height="660">
 	</canvas>
+	<div id="menu">
+		<select id="select_colors">
+			<option>Choose a color</otion>
+		</select>
+		<button id="clear_canvas">clear</button>
+	</div>	
 	</div>
 </body>
 <script src="js/RequestAnimationFrame.js"></script>
 <script>
-	var canvas = null;
-	var context = null;
-
-	var paTrees = [];
-	var _angle = 270
-	var _colors = ['Red','Green','Blue', 'Aqua', 'BlueViolet', 'Chartruese','Coral'];
-	var _color_num = Math.floor((Math.random() * _colors.length)); 
+	var _canvas = null,
+		context = null,
+		paTrees = [],
+		_angle = 270,
+		_colors = ['Red','Green','Blue', 'Aqua', 'BlueViolet','Coral'],
+		_color_num = Math.floor((Math.random() * _colors.length)),
+		_menu = null; 
 
 	function init() {
-		canvas=document.getElementById("myCanvas");
-		context=canvas.getContext("2d");
+		_canvas=document.getElementById("myCanvas");
+		context=_canvas.getContext("2d");
 		//clearCanvas();
 		//context.globalAlpha = 0.4;
-		canvas.addEventListener('click',ReDraw,false)
+		_canvas.addEventListener('click',ReDraw,false)
 		/*
 		var appel = new TFractalTree(4,110);
 		appel.CreateAndDrawTree(Math.floor(Math.random() * 900),Math.floor(Math.random() * (100) +400) + 60 ,_angle);
 		paTrees.push(appel)
 		*/
+		var select = document.getElementById("select_colors"); 
+		select.addEventListener('change',set_color,false);
+		for(var i = 0; i < _colors.length; i++) {
+		    var opt = _colors[i];
+		    var el = document.createElement("option");
+		    el.textContent = opt;
+		    el.value = opt;
+		    select.appendChild(el);
+		}
+		_menu = document.getElementById("menu"); 
+		var clear_canvas = document.getElementById("clear_canvas");
+		clear_canvas.addEventListener('click',clear_trees, false)
 	}
 
+	function set_color(e){
+		_menu.style.background = e.target.value
+	}
 	function clearCanvas() {
-		canvas=document.getElementById("myCanvas");
-		context=canvas.getContext("2d");
-		context.clearRect(0,0,canvas.width,canvas.height);
+		context.clearRect(0,0,_canvas.width,_canvas.height);
+	}
+	
+	function clear_trees(e){
+		console.dir(paTrees)
+		var i =0,
+			len = paTrees.length
+		
+		for(i; i < len; i++){
+			paTrees[i].ResetInterval();
+			removeByElement(paTrees,paTrees[i]);
+			paTrees = null;
+		}
+		paTrees = [];
+		console.dir(paTrees)
+		clearCanvas()
 	}
 
 	function ReDraw(e){
@@ -66,22 +106,15 @@
 		//http://www.html5canvastutorials.com/advanced/html5-canvas-mouse-coordinates/
 		var x = e.clientX;     
 		var y = e.clientY;
-		var rect = canvas.getBoundingClientRect();
+		var rect = _canvas.getBoundingClientRect();
       	x = Math.floor(x - rect.left)
       	y = Math.floor(y - rect.top)
-		console.log('_color_num : ',_color_num)
-		console.log(_colors[_color_num])      
+ 
 		clearCanvas()
 		var appel = new TFractalTree(6,110);
-		//Math.floor(Math.random() * (max - min + 1)) + min;
-		console.log("x : " , x)
-		console.log("y : " , y)
-		console.log("e : " , e)
-		
 		//appel.CreateAndDrawTree(Math.floor(Math.random() * 900),Math.floor(Math.random() * (100) +400) + 60 ,_angle);
 		appel.CreateAndDrawTree(x,y ,_angle);
-		paTrees.push(appel)
-		//drawBranches(canvas.width/2,canvas.height,50,0);
+		paTrees.push(appel);
 	}
 
 	var TFractalTree = function (iGeneration, iRandomSeed){
@@ -124,7 +157,6 @@
 		};
 	
 		this.OnEnterFrame = function(){
-			console.log("enter");
 			_this.piStepIndex++;
 			if(_this.piStepIndex > _this.piSteps){
 				_this.piStepIndex = 0;
@@ -144,7 +176,6 @@
 			clearInterval(_this.piInterval)
 			_this.piInterval = null;
 			console.log("stop");
-			
 		}
 	};
 
