@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>
+		partical system by Dirk Soentjens @tampert
+	</title>
+	<style>
+	#wrapper{
+		width: 960px;
+		position: relative; 
+		margin: 10px auto;
+		padding:8px 0px;
+	}
+	#myCanvas{
+		background:#FFF;
+		border:1px solid gray;
+	}
+
+	</style>
+</head>
+<body>
+	<div id="wrapper">
+	<canvas id="myCanvas" width="960" height="660">
+	</canvas>
+	</div>
+</body>
+<script src="js/RequestAnimationFrame.js"></script>
+<script>
+	var canvas = null;
+	var context = null;
+
+	var paTrees = [];
+	var _angle = 270
+	var _colors = ['Red','Green','Beige','Azure', 'Aqua'];
+	var _color_num = Math.floor((Math.random() * _colors.length)); 
+
+	function init() {
+		canvas=document.getElementById("myCanvas");
+		context=canvas.getContext("2d");
+		clearCanvas();
+		context.globalAlpha = 0.4;
+	
+		canvas.addEventListener('click',ReDraw,false)
+		/*
+		var appel = new TFractalTree(4,110);
+		appel.CreateAndDrawTree(Math.floor(Math.random() * 900),Math.floor(Math.random() * (100) +400) + 60 ,_angle);
+		paTrees.push(appel)
+		*/
+	}
+
+	function clearCanvas() {
+		var canvas=document.getElementById("myCanvas");
+		var context=canvas.getContext("2d");
+		context.clearRect(0,0,canvas.width,canvas.height);
+	}
+
+	function ReDraw(e){
+		_color_num = Math.floor((Math.random() * _colors.length)); 
+		if(paTrees[0]){
+			paTrees[0].ResetInterval();
+			removeByElement(paTrees,paTrees[0]);
+		}
+		//mouse position
+		//http://www.html5canvastutorials.com/advanced/html5-canvas-mouse-coordinates/
+		var x = e.clientX;     
+		var y = e.clientY;
+		var rect = canvas.getBoundingClientRect();
+      	x = Math.floor(x - rect.left)
+      	y = Math.floor(y - rect.top)
+		console.log('_color_num : ',_color_num)
+		console.log(_colors[_color_num])      
+		clearCanvas()
+		var appel = new TFractalTree(4,110);
+		//Math.floor(Math.random() * (max - min + 1)) + min;
+		console.log("x : " , x)
+		console.log("y : " , y)
+		console.log("e : " , e)
+		
+		//appel.CreateAndDrawTree(Math.floor(Math.random() * 900),Math.floor(Math.random() * (100) +400) + 60 ,_angle);
+		appel.CreateAndDrawTree(x,y ,_angle);
+		paTrees.push(appel)
+		//drawBranches(canvas.width/2,canvas.height,50,0);
+	}
+
+	var TFractalTree = function (iGeneration, iRandomSeed){
+		this.piGeneration = iGeneration;
+		this.piDegToRad = Math.PI /180;
+		this.poColor = "#BBBBBB";
+		this.paGenerations = [];
+	
+		this.piSteps = 10;
+		this.piGenerationIndex = 0;
+		this.piStepIndex = 0;
+		this.poRandomSeed = iRandomSeed;
+	
+		this.piInterval = null;
+		_this = this;
+	
+		for(var i = 0; i < this.piGeneration; i++){
+			this.paGenerations.push([]);
+		}
+	
+		this.CreateAndDrawTree = function(x1,y1, angle) {
+			this.ConstructTree(x1,y1, angle, this.piGeneration);
+			this.piInterval = setInterval(this.OnEnterFrame, 60);
+		};
+	
+		this.ConstructTree = function(x1, y1, angle, depth){
+			var x2 = x1 + (Math.cos(angle * this.piDegToRad) * depth * 40);
+			var y2 = y1 + (Math.sin(angle * this.piDegToRad) * depth * 40);
+			var o = new TLine( x1, y1, x2 , y2);
+			this.paGenerations[this.piGeneration - depth].push(o);
+		
+			depth--;
+			if (depth > 0){
+				var iBranches = Math.floor(Math.random()*5)+1;
+				for(var i = 0; i < iBranches;i++){
+					var iAngle = Math.floor(Math.random()*360);
+					this.ConstructTree(x2, y2, angle + iAngle, depth);
+				}	
+			}
+		};
+	
+		this.OnEnterFrame = function(){
+			console.log("enter");
+			_this.piStepIndex++;
+			if(_this.piStepIndex > _this.piSteps){
+				_this.piStepIndex = 0;
+				_this.piGenerationIndex++;
+				if(_this.piGenerationIndex == _this.piGeneration){
+					console.log("end");
+					_this.ResetInterval()
+				}
+			}else{
+				var p =  _this.piStepIndex/_this.piSteps;
+				for  (var oLine in _this.paGenerations[_this.piGenerationIndex]){
+					_this.paGenerations[_this.piGenerationIndex][oLine].draw(_colors[_color_num], p);
+				}
+			}
+		},
+		this.ResetInterval = function(){
+			clearInterval(_this.piInterval)
+			_this.piInterval = null;
+			console.log("stop");
+			
+		}
+	};
+
+	//http://www.pagecolumn.com/javascript/settimeout.htm
+	/*
+	TFractalTree.prototype = {
+	    _this : "",
+	    init: function() {
+	        _this = this;
+	    },
+		start: function() {
+	     	//_this.piInterval =  setTimeout(_this.OnEnterFrame,100);
+	    } 
+	};
+	*/
+
+	//the line of which the tree is made off 
+	var TLine = function(x1, y1, x2, y2){
+		this.piX1 = x1;
+		this.piY1 = y1;
+		this.piX2 = x2;
+		this.piY2 = y2;
+		this.piDX = x2 - x1;
+		this.piDY = y2 - y1;
+		//context.moveTo(this.piX1, this.piY1);
+	
+		this.draw = function(iColor, iPercentage){
+			clearCanvas();
+			context.lineWidth = 0.5;
+			context.strokeStyle = iColor;
+			var toX = this.piX1 + (this.piDX * iPercentage);
+			var toY = this.piY1 + (this.piDY * iPercentage); 
+			context.moveTo(this.piX1, this.piY1);
+			context.lineTo(toX, toY);
+			context.stroke();
+		}
+	}
+
+
+	function removeByElement(arrayName,arrayElement){
+		for(var i=0; i<arrayName.length;i++ ){ 
+		if(arrayName[i]==arrayElement)
+			arrayName.splice(i,1); 
+		} 
+	}
+
+	window.onload = function(){
+		init();
+	}
+</script>
+</html>
